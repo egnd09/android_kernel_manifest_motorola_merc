@@ -23,7 +23,12 @@ cd android_kernel_manifest_motorola_merc
 docker build -t edge70-kleaf:ubuntu24 docker
 ./build.sh                                  # kernel + modules, ~1 h on 12 threads, ~20 GB in workspace/kernel/out
 ./build-dts.sh                              # mt6899.dtb, mt6899-merc-evb-overlay.dtbo, dtbo.img
+./build-uapi-headers.sh                     # kernel-uapi-headers.tar.gz (usr/include), for TARGET_PREBUILT_KERNEL_HEADERS
 ```
+
+On an NTFS (or any root-owned) volume git refuses the cloned repositories as "dubious ownership"; export
+`GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'` before `sync.py` so every git
+call it makes inherits the exception.
 
 `sync.py` reads `default.xml`, shallow-clones every project at its revision, fetches only the two
 directories of `prebuilts/clang/host/linux-x86` Kleaf uses (`clang-r510928`, `kleaf`), sparse-checks
@@ -79,7 +84,8 @@ does not link against this kernel (undefined `engine_cooler_*`). Also missing: `
 `met_drv_secure_v3` and every `*_int` package. `prune-missing.py` drops those labels from
 `kernel/kleaf/mgk_64.bzl` (keeping `.orig`) so the rest builds; `fpsgo.ko`, `game.ko`,
 `cpufreq_sugov_ext.ko` and `moto_swap5.ko` have to stay prebuilt from stock.
-`kernel-uapi-headers.tar.gz` is not produced by the MediaTek dist target.
+`kernel-uapi-headers.tar.gz` is not produced by the MediaTek dist target; `build-uapi-headers.sh` makes it with
+Kbuild `headers_install` (host tools linked against the hermetic glibc 2.17 sysroot, so the container needs no libc6-dev).
 
 Android 16 → 17 tag diff: no hardware change; `merc-charger.dtsi` (11 lines, battery ids),
 `CONFIG_SCHED_MOTO_BINDERTRANS=y`, `moto_swap` → `moto_swap5`, aw86938s haptics (12 lines),
