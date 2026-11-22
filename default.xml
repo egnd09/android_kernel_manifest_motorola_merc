@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Kleaf workspace manifest for the Motorola Edge 70 Pro (merc, MT6899) kernel.
+  Android 16 launch build: tag MMI-W3WM36.40-46-2 ("Merc push for Android 16").
+  Android 17: tag MMI-A171WMH.44-25 ("Merc push for Android 17") exists on the same repos.
+  Layout matches what kernel_device_modules-6.6/build.sh and build/bazel_mgk_rules expect:
+  the workspace is <top>/kernel and MediaTek's WORKSPACE refers to ../vendor/mediatek, so
+  sync with ./sync.py (plain git, no `repo` needed) into workspace/kernel; it also creates
+  workspace/vendor -> kernel/vendor and the other symlinks. See README.md.
+-->
+<manifest>
+  <remote name="moto" fetch="https://github.com/MotorolaMobilityLLC/" />
+  <remote name="aosp" fetch="https://android.googlesource.com/" />
+  <remote name="mt6899devs" fetch="https://github.com/mt6899-devs/" />
+  <default remote="moto" revision="refs/tags/MMI-W3WM36.40-46-2" sync-j="4" clone-depth="1" />
+
+  <!-- Motorola, merc tag -->
+  <project path="kernel-6.6" name="kernel-mtk" />
+  <project path="kernel_device_modules-6.6" name="kernel-kernel_device_modules-6.6" />
+  <project path="motorola/kernel/modules" name="motorola-kernel-modules" />
+  <project path="build/kernel" name="kernel-build-kernel" />
+  <project path="build/bazel_mgk_rules" name="kernel-build-bazel_mgk_rules" />
+  <project path="prebuilts/kernel-build-tools" name="kernel-prebuilts-kernel-build-tools" />
+  <project path="vendor/mediatek/kernel_modules/gpu" name="vendor-mediatek-kernel_modules-gpu" />
+  <project path="vendor/mediatek/kernel_modules/mtkcam" name="vendor-mediatek-kernel_modules-mtkcam" />
+  <project path="vendor/mediatek/kernel_modules/met_drv_v3" name="vendor-mediatek-kernel_modules-met_drv_v3" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/common" name="vendor-mediatek-kernel_modules-connectivity-common" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/connfem" name="vendor-mediatek-kernel_modules-connectivity-connfem" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/conninfra" name="vendor-mediatek-kernel_modules-connectivity-conninfra" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/fmradio" name="vendor-mediatek-kernel_modules-connectivity-fmradio" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/gps" name="vendor-mediatek-kernel_modules-connectivity-gps" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/bt/mt66xx" name="vendor-mediatek-kernel_modules-connectivity-bt-mt66xx" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/wlan/adaptor" name="vendor-mediatek-kernel_modules-connectivity-wlan-adaptor" />
+  <project path="vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m" name="vendor-mediatek-kernel_modules-connectivity-wlan-core-gen4m" />
+
+  <!-- MediaTek customer modules Motorola did not publish; same SoC, from the Xiaomi rodin drop.
+       fpsgo_cus from that drop does not link against this kernel (undefined engine_cooler_*), so it is not
+       linked: fpsgo.ko and game.ko stay prebuilt from stock. -->
+  <project path="vendor/mediatek/kernel_modules/_rodin" name="android_vendor_mediatek_kernel_modules" remote="mt6899devs" revision="bsp-rodin-v-oss">
+    <linkfile src="sched_cus" dest="vendor/mediatek/kernel_modules/sched_cus" />
+    <linkfile src="task_turbo_cus" dest="vendor/mediatek/kernel_modules/task_turbo_cus" />
+    <linkfile src="msync2_frd_cus" dest="vendor/mediatek/kernel_modules/msync2_frd_cus" />
+    <linkfile src="afs_common_utils" dest="vendor/mediatek/kernel_modules/afs_common_utils" />
+    <linkfile src="afs_core_cus" dest="vendor/mediatek/kernel_modules/afs_core_cus" />
+    <linkfile src="hbt_driver_cus" dest="vendor/mediatek/kernel_modules/hbt_driver_cus" />
+  </project>
+
+  <!-- AOSP kernel build prebuilts (kernel/manifest common-android15-6.6 pins these to main-kernel-build-2024) -->
+  <project path="build/bazel_common_rules" name="platform/build/bazel_common_rules" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="prebuilts/clang-tools" name="platform/prebuilts/clang-tools" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="prebuilts/jdk/jdk11" name="platform/prebuilts/jdk/jdk11" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="prebuilts/ndk-r26" name="toolchain/prebuilts/ndk/r26" remote="aosp" revision="main-kernel-build-2024" />
+  <!-- prebuilts/clang/host/linux-x86 is deliberately NOT a project: the full repo is tens of GB and only
+       clang-r510928/ and kleaf/ are needed (build.config.constants). sync.py fetches those two directories
+       from gitiles (+archive and ?format=TEXT). prebuilts/ndk-r26 is also fetched by sync.py as a sparse
+       checkout of toolchains/llvm/prebuilt/linux-x86_64/sysroot only (the rest of r26 is unused). -->
+  <project path="tools/mkbootimg" name="platform/system/tools/mkbootimg" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/libcap-ng" name="platform/external/libcap-ng" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/libcap" name="platform/external/libcap" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazel-skylib" name="platform/external/bazel-skylib" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-bazel-central-registry" name="platform/external/bazelbuild-bazel-central-registry" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-platforms" name="platform/external/bazelbuild-platforms" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-apple_support" name="platform/external/bazelbuild-apple_support" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-rules_cc" name="platform/external/bazelbuild-rules_cc" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-rules_java" name="platform/external/bazelbuild-rules_java" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-rules_license" name="platform/external/bazelbuild-rules_license" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-rules_pkg" name="platform/external/bazelbuild-rules_pkg" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/bazelbuild-rules_python" name="platform/external/bazelbuild-rules_python" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/python/absl-py" name="platform/external/python/absl-py" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/lz4" name="platform/external/lz4" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/pigz" name="platform/external/pigz" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/toybox" name="platform/external/toybox" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/zlib" name="platform/external/zlib" remote="aosp" revision="main-kernel-build-2024" />
+  <project path="external/zopfli" name="platform/external/zopfli" remote="aosp" revision="main-kernel-build-2024" />
+</manifest>
